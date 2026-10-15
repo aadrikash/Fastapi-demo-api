@@ -30,6 +30,10 @@ class Patient(BaseModel):
         return value.upper()
     
     @field_validator('age', mode='after')
+    #here mode='after' is used to validate the age field after the model is created. It can be used to validate the age field after the model is created. It can also be used to transform the age field after the model is created.
+
+    #mode='before' is used to validate the age field before the model is created. It can be used to validate the age field before the model is created. It can also be used to transform the age field before the model is created.
+    
     @classmethod
     def validate_age(cls, value):
         if 0 < value < 100:
@@ -51,3 +55,5 @@ patient_info = {'name':'aadrika', 'email':'abc@icici.com', 'age': '22', 'weight'
 patient1 = Patient(**patient_info) # validation -> type coercion
 
 update_patient_data(patient1)
+
+#typecorcion is the process of converting a value from one data type to another. In this case, the age field is defined as an int, but the value provided in the patient_info dictionary is a string. Pydantic will automatically convert the string to an int during validation.
