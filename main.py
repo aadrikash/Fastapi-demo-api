@@ -2,7 +2,7 @@ from fastapi import FastAPI , Path, HTTPException , Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field , computed_field
 from typing_extensions import Annotated
-from typing import Literal
+from typing import Literal, Optional
 import json
 
 
@@ -35,6 +35,17 @@ class Patient(BaseModel):
             return 'Overweight'
         else:
             return 'Obese'
+
+
+
+class PatientUpdate(BaseModel):
+    name :Annotated[Optional[str], Field(default = None)]
+    city :Annotated[Optional[str], Field(default = None)]
+    age: Annotated[Optional[int],Field(default=None, gt = 0)]
+    gender: Annotated[Optional[Literal['male','female','other']],Field(default=None)]
+    height:Annotated[Optional[float],Field(default = None, gt = 0 )]
+    weight: Annotated[Optional[float],Field(default = None,gt = 0)]
+
 
    
 
@@ -115,5 +126,57 @@ def create_patient(patient:Patient):
 
     return JSONResponse(status_code = 201 , content = {'message':f'patient created successfully with ID {patient.id}'})
 
-        
+@app.put('/edit/{patient_id}')
+def update_patient(patient_id:str, patient_update:PatientUpdate):
+
+    #we are using PUT method to update the patient data. PUT method is used to update the entire resource. If the resource does not exist, it will create a new resource. If the resource exists, it will update the existing resource.
+
+    #load existing data
+    data = load_data()
+
+    #we are checking if the patient exists in the database. If the patient does not exist, we are raising an HTTPException with status code 404 and a message that the patient does not exist in the database. If the patient exists, we are updating the patient data with the new data provided in the request body. We are using model_dump() method to convert the pydantic model to dictionary format before saving it to the database. We are also excluding the 'id' field from the dictionary as we do not want to update the id of the patient.
+
+    if patient_id not in data:
+        raise HTTPException(status_code = 404, detail = f'patient with ID{patient_id} not found in database')
+    existing_patient_info = data[patient_id]
+
+    updated_patient_info = patient_update.model_dump(exclude_unset=True)
+    #patient_update is pydantic model. We are using model_dump() method to convert the pydantic model to dictionary format before saving it to the database. We are also excluding the unset fields from the dictionary as we do not want to update the fields that are not provided in the request body.
+
+    for key,value in updated_patient_info.items():
+        existing_patient_info[key] = value
+
+    #existing_patient_info is a dictionary that contains the existing patient data. We are updating the existing patient data with the new data provided in the request body. We are using a for loop to iterate over the updated_patient_info dictionary and update the existing_patient_info dictionary with the new values.
+
+    existing_patient_info['id'] = patient_id
+    patient_pydantic_obj = Patient(**existing_patient_info)
+
+    existing_patient_info = patient_pydantic_obj.model_dump(exclude = ['id'])
+    # we are converting the existing_patient_info dictionary to pydantic model format before saving it to the database. We are using the Patient model to create a new instance of the Patient model with the updated data.
+
+#and then we are converting the pydantic model to dictionary format using model_dump() method before saving it to the database. We are also excluding the 'id' field from the dictionary as we do not want to update the id of the patient.
+
+    data[patient_id] = existing_patient_info
+    
+
+    save_data(data)
+
+    return JSONResponse(status_code = 200 , content = {'message':f'patient with ID {patient_id} updated successfully'})
+
+
+
+@app.delete('/delete/{patient_id}')
+def delete_patient(patient_id:str):
+
+    #load existing data
+    data = load_data()
+    if patient_id not in data:
+        raise HTTPException(status_code = 404, detail = f'patient with ID{patient_id} not found in database')
+
+
+    del data[Patient_id]
+    save_data(data)
+
+    return JSONResponse(status_code = 200 , content = {'message':f'patient with ID {patient_id} deleted successfully'})
+      
         
