@@ -31,6 +31,9 @@ def update_patient_data(patient: Patient):
 
     print(patient.name)
     print(patient.age)
+
+
+    
     print(patient.allergies)
     print(patient.married)
     print('updated')
