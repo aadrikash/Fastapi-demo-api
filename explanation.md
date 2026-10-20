@@ -1367,22 +1367,3 @@ The reason you see the same logic for city_tier and lifestyle_risk in both Fasta
 
 options we can do:
 although we can write the logic function in seperate file and call them in app.py and juypter and one more way we can also add it in the pipeline as well.
-
-
-
-## for terminal execution of serving_ml_models_with_fastapi 
-
-
-in that directory run command 
- uvicorn app:app --reload
-
-
-
- ## for fast_api_demo project use command 
-
- uvicorn main:app --reload
- in the outer directory 
-
-
-
-
